@@ -46,10 +46,10 @@ Options: `--json`, `--quiet`, `--min-severity {low,medium,high,critical}`, `--no
 from xss_checker import Severity, scan
 
 result = scan("<svg/onload=alert(1)>", min_severity=Severity.MEDIUM)
-result.is_malicious          # True
-result.severity              # Severity.HIGH
+result.is_malicious  # True
+result.severity  # Severity.HIGH
 result.findings[0].pattern_id  # 'event-handler'
-result.to_dict()             # JSON-serializable report
+result.to_dict()  # JSON-serializable report
 ```
 
 ## Development
