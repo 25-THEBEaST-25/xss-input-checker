@@ -1,23 +1,6 @@
-import re
+"""Backwards-compatible entry point: ``python checker.py``."""
 
-# Common XSS attack patterns
-XSS_PATTERNS = [
-    r"<script.*?>",
-    r"javascript:",
-    r"onerror=",
-    r"onload=",
-    r"<.*?on.*?>"
-]
+from xss_checker.cli import main
 
-def is_malicious(user_input):
-    for pattern in XSS_PATTERNS:
-        if re.search(pattern, user_input, re.IGNORECASE):
-            return True
-    return False
-
-user_input = input("Enter input to test: ")
-
-if is_malicious(user_input):
-    print("⚠️ Potential XSS detected!")
-else:
-    print("✅ Input looks safe")
+if __name__ == "__main__":
+    raise SystemExit(main())
