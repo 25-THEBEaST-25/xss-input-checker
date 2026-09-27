@@ -108,20 +108,6 @@ PATTERNS: tuple[Pattern, ...] = (
         description="HTML, URL or unicode escapes hiding markup characters.",
     ),
     Pattern(
-        id="html-injection",
-        name="Raw HTML injection",
-        severity=Severity.LOW,
-        regex=_compile(r"<\s*/?\s*[a-z][a-z0-9-]*\b[^>]*>"),
-        description="Raw HTML tag; unsafe when reflected without escaping.",
-    ),
-    Pattern(
-        id="attribute-breakout",
-        name="Attribute breakout",
-        severity=Severity.MEDIUM,
-        regex=_compile(r"[\"'][\s/]*>|[\"'][^\"'<>]{0,40}[\"']\s*(?:>|\bon[a-z]{3,}\s*=)"),
-        description="Quote sequence that escapes an HTML attribute context.",
-    ),
-    Pattern(
         id="null-byte",
         name="Control character",
         severity=Severity.MEDIUM,

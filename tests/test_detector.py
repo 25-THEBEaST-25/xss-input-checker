@@ -23,6 +23,12 @@ MALICIOUS = [
     '<div style="width:expression(alert(1))">x</div>',
     '" onmouseover="alert(1)',
     "<body onload=alert('xss')>",
+    'foo"><script>alert(1)</script>',
+    "<math><mtext><script>alert(1)</script></mtext></math>",
+    '<base href="javascript:alert(1)//">',
+    '<form action="javascript:alert(1)"><input type=submit></form>',
+    "@import url(javascript:alert(1));",
+    "background:url('data:text/html,<script>alert(1)</script>')",
 ]
 
 BENIGN = [
@@ -37,6 +43,23 @@ BENIGN = [
     "https://example.com/path?query=value&other=1",
 ]
 
+# Legitimate, non-scripting HTML that a naive checker could easily misflag.
+# These must NOT be treated as malicious: a static checker that can't tell
+# a normal <b>/<a href>/<img src> from an attack payload is useless for any
+# real page containing ordinary markup (comments, rich text fields, etc).
+BENIGN_HTML = [
+    "<b>bold</b>",
+    "<i>italic</i> and <u>underline</u>",
+    '<a href="https://example.com">a normal link</a>',
+    '<a href="mailto:person@example.com">email me</a>',
+    '<img src="cat.jpg" alt="a cat">',
+    '<img src="https://cdn.example.com/logo.png" width="200" height="100"/>',
+    "<p>Some <strong>legit</strong> markup.</p>",
+    "<ul><li>Item one</li><li>Item two</li></ul>",
+    '<div class="card"><h2>Title</h2><p>Body text.</p></div>',
+    "<blockquote>A quoted sentence.</blockquote>",
+]
+
 
 @pytest.mark.parametrize("payload", MALICIOUS)
 def test_detects_malicious_payloads(payload: str) -> None:
@@ -48,6 +71,19 @@ def test_detects_malicious_payloads(payload: str) -> None:
 @pytest.mark.parametrize("payload", BENIGN)
 def test_allows_benign_input(payload: str) -> None:
     assert not scan(payload).is_malicious, payload
+
+
+@pytest.mark.parametrize("payload", BENIGN_HTML)
+def test_does_not_flag_legitimate_non_scripting_html(payload: str) -> None:
+    """False-positive guard: ordinary formatting/markup must scan clean.
+
+    A checker that treats every <b>, <a href> or <img src> as an attack is
+    unusable for anything that legitimately contains HTML (comments, rich
+    text, templated pages), so this is verified explicitly and separately
+    from the general BENIGN corpus above.
+    """
+    result = scan(payload)
+    assert not result.is_malicious, (payload, [f.pattern_id for f in result.findings])
 
 
 def test_empty_input_is_clean() -> None:
@@ -74,11 +110,11 @@ def test_findings_sorted_by_descending_severity() -> None:
 
 def test_severity_is_the_maximum_of_findings() -> None:
     assert scan("<script>alert(1)</script>").severity is Severity.CRITICAL
-    assert scan("<b>bold</b>").severity is Severity.LOW
+    assert scan("width:expression(alert(1))").severity is Severity.MEDIUM
 
 
 def test_min_severity_filters_low_signal_findings() -> None:
-    assert scan("<b>bold</b>", min_severity=Severity.HIGH).is_malicious is False
+    assert scan("width:expression(alert(1))", min_severity=Severity.HIGH).is_malicious is False
     assert scan("<script>x</script>", min_severity=Severity.HIGH).is_malicious is True
 
 
