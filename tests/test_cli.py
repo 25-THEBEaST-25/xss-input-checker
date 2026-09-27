@@ -47,8 +47,14 @@ def test_quiet_mode_suppresses_output() -> None:
 
 
 def test_min_severity_filter() -> None:
-    assert run("--min-severity", "high", "<b>bold</b>")[0] == EXIT_CLEAN
-    assert run("<b>bold</b>")[0] == EXIT_DETECTED
+    assert run("--min-severity", "high", "width:expression(alert(1))")[0] == EXIT_CLEAN
+    assert run("width:expression(alert(1))")[0] == EXIT_DETECTED
+
+
+def test_does_not_flag_legitimate_html() -> None:
+    assert run("<b>bold</b>")[0] == EXIT_CLEAN
+    assert run('<a href="https://example.com">link</a>')[0] == EXIT_CLEAN
+    assert run('<img src="cat.jpg" alt="a cat">')[0] == EXIT_CLEAN
 
 
 def test_reads_from_stdin_when_not_a_tty() -> None:
