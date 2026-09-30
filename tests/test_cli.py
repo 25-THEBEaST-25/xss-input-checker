@@ -94,3 +94,28 @@ def test_no_decode_flag_skips_decoded_layers() -> None:
     _, decoded, _ = run("--json", "%3Cscript%3Ealert(1)%3C/script%3E")
     assert json.loads(raw_only)["severity"] == "medium"
     assert json.loads(decoded)["severity"] == "critical"
+
+
+def test_text_output_includes_fix_guidance() -> None:
+    code, out, _ = run("<script>alert(1)</script>")
+    assert code == EXIT_DETECTED
+    assert "fix:" in out
+    assert "sanitizer" in out.lower()
+
+
+def test_fix_guidance_not_repeated_for_duplicate_pattern_matches() -> None:
+    code, out, _ = run("<script>x</script><script>y</script>")
+    assert code == EXIT_DETECTED
+    assert out.count("fix:") == 1
+
+
+def test_json_output_includes_remediation() -> None:
+    _, out, _ = run("--json", "<script>alert(1)</script>")
+    payload = json.loads(out)
+    assert payload["findings"][0]["remediation"]
+
+
+def test_list_patterns_includes_fix_guidance() -> None:
+    code, out, _ = run("--list-patterns")
+    assert code == EXIT_CLEAN
+    assert "fix:" in out

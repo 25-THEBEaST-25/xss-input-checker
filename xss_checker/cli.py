@@ -70,17 +70,22 @@ def _render_text(results: Sequence[ScanResult], stream: IO[str]) -> None:
         severity = result.severity
         assert severity is not None
         print(f"[{_ICONS[severity]}] {result.value!r} -> {severity} risk", file=stream)
+        seen_remediations: set[str] = set()
         for finding in result.findings:
             print(
                 f"    {finding.severity.value:<8} {finding.name} "
                 f"({finding.pattern_id}, layer={finding.layer}) matched {finding.matched!r}",
                 file=stream,
             )
+            if finding.pattern_id not in seen_remediations:
+                seen_remediations.add(finding.pattern_id)
+                print(f"      fix: {finding.remediation}", file=stream)
 
 
 def _list_patterns(stream: IO[str]) -> None:
     for pattern in sorted(PATTERNS, key=lambda item: (-item.severity.rank, item.id)):
         print(f"{pattern.severity.value:<8} {pattern.id:<20} {pattern.description}", file=stream)
+        print(f"{'':<8} {'':<20} fix: {pattern.remediation}", file=stream)
 
 
 def main(

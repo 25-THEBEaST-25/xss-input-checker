@@ -158,3 +158,22 @@ def test_severity_parsing_and_ordering() -> None:
     assert Severity.LOW < Severity.CRITICAL
     with pytest.raises(ValueError):
         Severity.parse("extreme")
+
+
+def test_every_finding_carries_actionable_remediation() -> None:
+    for payload in MALICIOUS:
+        for finding in scan(payload).findings:
+            assert finding.remediation, finding.pattern_id
+            assert len(finding.remediation) > 20, finding.pattern_id
+
+
+def test_every_pattern_has_unique_remediation_text() -> None:
+    from xss_checker.patterns import PATTERNS
+
+    remediations = [pattern.remediation for pattern in PATTERNS]
+    assert len(remediations) == len(set(remediations))
+
+
+def test_remediation_included_in_serialized_finding() -> None:
+    finding = scan("<script>alert(1)</script>").findings[0]
+    assert finding.to_dict()["remediation"] == finding.remediation

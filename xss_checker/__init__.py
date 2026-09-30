@@ -4,7 +4,7 @@ from .detector import Finding, ScanResult, is_malicious, normalize, scan, scan_a
 from .patterns import PATTERNS, Pattern
 from .severity import Severity
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 __all__ = [
     "Finding",
