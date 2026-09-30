@@ -27,6 +27,7 @@ class Finding:
     name: str
     severity: Severity
     description: str
+    remediation: str
     matched: str
     start: int
     end: int
@@ -38,6 +39,7 @@ class Finding:
             "name": self.name,
             "severity": self.severity.value,
             "description": self.description,
+            "remediation": self.remediation,
             "matched": self.matched,
             "start": self.start,
             "end": self.end,
@@ -115,6 +117,7 @@ def _scan_layer(pattern: Pattern, layer: str, text: str) -> list[Finding]:
                 name=pattern.name,
                 severity=pattern.severity,
                 description=pattern.description,
+                remediation=pattern.remediation,
                 matched=match.group(0)[:MAX_MATCH_PREVIEW],
                 start=match.start(),
                 end=match.end(),

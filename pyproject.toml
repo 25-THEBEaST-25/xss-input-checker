@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xss-input-checker"
-version = "1.0.0"
+version = "1.1.0"
 description = "Detect common cross-site scripting payloads in untrusted input."
 readme = "README.md"
 requires-python = ">=3.10"

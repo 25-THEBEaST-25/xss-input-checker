@@ -34,6 +34,12 @@ stripping. Every decoded layer is scanned in addition to the raw input, so `%3Cs
 **Structured results**: every finding reports the pattern id, severity, matched text, offset and
 the decoding layer it was found in (`scan(...).to_dict()` / `xss-check --json`).
 
+**Remediation guidance**: every finding also carries a concrete `remediation` string — not just
+"this is dangerous" but *what to do about it* (e.g. "HTML-escape output before rendering, or
+strip `<script>` with an allow-list HTML sanitizer"). The text CLI prints each unique fix once per
+scanned value (`fix: ...`), the JSON output includes it per finding, and `--list-patterns` prints
+the full catalogue with its remediation.
+
 **False-positive calibration**: ordinary, non-scripting HTML — a plain `<b>`, `<a href="...">`,
 or `<img src="...">` — is *not* flagged. Earlier iterations of this tool matched *any* HTML tag
 or *any* attribute ending in a quote, which meant routine markup (blog comments, templated pages)
@@ -76,6 +82,7 @@ result = scan("<svg/onload=alert(1)>", min_severity=Severity.MEDIUM)
 result.is_malicious  # True
 result.severity  # Severity.HIGH
 result.findings[0].pattern_id  # 'event-handler'
+result.findings[0].remediation  # actionable fix guidance for this finding
 result.to_dict()  # JSON-serializable report
 ```
 
